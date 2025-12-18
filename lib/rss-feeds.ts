@@ -1,5 +1,13 @@
 export type Category = "all" | "design" | "ai" | "tech"
 
+export type PersonaType = "dev" | "design" | "product"
+
+export interface AISummary {
+  dev: string
+  design: string
+  product: string
+}
+
 export interface FeedSource {
   name: string
   url: string
@@ -66,4 +74,5 @@ export interface NewsItem {
   source: string
   category: Exclude<Category, "all">
   imageUrl?: string
+  ai_summary?: AISummary
 }

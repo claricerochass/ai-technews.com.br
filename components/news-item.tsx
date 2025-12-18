@@ -5,6 +5,7 @@ import type React from "react"
 import { ExternalLink } from "lucide-react"
 import type { NewsItem as NewsItemType } from "@/lib/rss-feeds"
 import { cn } from "@/lib/utils"
+import { AISummaryCard } from "./ai-summary"
 
 interface NewsItemProps {
   item: NewsItemType
@@ -644,47 +645,59 @@ export function NewsItem({ item }: NewsItemProps) {
   }
 
   return (
-    <a
-      href={item.link}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group flex gap-4 rounded-lg p-4 transition-colors hover:bg-secondary/50"
-    >
-      <div className="relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-md bg-secondary">
-        {hasImage ? (
-          <img
-            src={item.imageUrl || "/placeholder.svg"}
-            alt=""
-            className="h-full w-full object-cover transition-transform group-hover:scale-105"
-            loading="lazy"
-          />
-        ) : (
-          <div className="h-full w-full transition-transform group-hover:scale-105">
-            <PatternComponent seed={seed} />
-          </div>
+    <article className="group">
+      <a
+        href={item.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cn(
+          "flex gap-4 rounded-xl p-4 transition-all duration-200",
+          "hover:bg-muted/50",
+          !hasImage && "flex-col sm:flex-row",
         )}
-      </div>
-
-      {/* Content */}
-      <div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
-        <div>
-          <h3 className="line-clamp-2 text-sm font-medium leading-snug text-foreground group-hover:text-foreground/80">
-            {item.title}
-          </h3>
-          <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{item.description}</p>
+      >
+        <div className="relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-md bg-secondary">
+          {hasImage ? (
+            <img
+              src={item.imageUrl || "/placeholder.svg"}
+              alt=""
+              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div className="h-full w-full transition-transform group-hover:scale-105">
+              <PatternComponent seed={seed} />
+            </div>
+          )}
         </div>
 
-        <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-          <span className={cn("rounded px-1.5 py-0.5 font-medium", categoryColors[item.category])}>
-            {item.category.toUpperCase()}
-          </span>
-          <span className="text-border">•</span>
-          <span>{item.source}</span>
-          <span className="text-border">•</span>
-          <span>{formatDate(item.pubDate)}</span>
-          <ExternalLink className="ml-auto h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
+        {/* Content */}
+        <div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
+          <div>
+            <h3 className="line-clamp-2 text-sm font-medium leading-snug text-foreground group-hover:text-foreground/80">
+              {item.title}
+            </h3>
+            <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{item.description}</p>
+          </div>
+
+          <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+            <span className={cn("rounded px-1.5 py-0.5 font-medium", categoryColors[item.category])}>
+              {item.category.toUpperCase()}
+            </span>
+            <span className="text-border">•</span>
+            <span>{item.source}</span>
+            <span className="text-border">•</span>
+            <span>{formatDate(item.pubDate)}</span>
+            <ExternalLink className="ml-auto h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
+          </div>
         </div>
-      </div>
-    </a>
+      </a>
+
+      {item.ai_summary && (
+        <div className="px-4">
+          <AISummaryCard summary={item.ai_summary} category={item.category} />
+        </div>
+      )}
+    </article>
   )
 }
