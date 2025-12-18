@@ -37,7 +37,9 @@ export function AISummaryCard({ summary, category }: AISummaryProps) {
       <button onClick={() => setIsExpanded(!isExpanded)} className="flex w-full items-center justify-between text-left">
         <div className="flex items-center gap-2">
           <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-          <span className="text-xs font-medium text-muted-foreground italic">Insight por IA</span>
+          <span className="text-xs font-medium text-muted-foreground italic">
+            Escolha seu resumo inteligente de acordo com seu perfil
+          </span>
         </div>
         {isExpanded ? (
           <ChevronUp className="h-4 w-4 text-muted-foreground" />
