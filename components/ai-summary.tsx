@@ -60,26 +60,7 @@ export function AISummaryCard({ summary, category }: AISummaryProps) {
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className="mt-3 space-y-3">
-          <div className="flex gap-1.5">
-            {personas
-              .filter((p) => p.id !== selectedPersona)
-              .map((persona) => (
-                <button
-                  key={persona.id}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setSelectedPersona(persona.id)
-                  }}
-                  className="flex items-center gap-1.5 rounded-md border border-transparent bg-muted/50 px-2 py-1 text-xs font-medium text-muted-foreground transition-all hover:bg-muted"
-                >
-                  {persona.icon}
-                  {persona.label}
-                </button>
-              ))}
-          </div>
-
-          {/* Summary text */}
+        <div className="mt-3">
           <p className="text-sm leading-relaxed text-foreground/80">{summary[selectedPersona]}</p>
         </div>
       )}
