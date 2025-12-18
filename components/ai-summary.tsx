@@ -39,7 +39,6 @@ export function AISummaryCard({ summary, category }: AISummaryProps) {
       <button onClick={() => setIsExpanded(!isExpanded)} className="flex w-full items-center justify-between text-left">
         <div className="flex items-center gap-2">
           <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-          <span className="text-xs font-medium text-muted-foreground">Resumo IA</span>
           {/* Chip da persona selecionada */}
           <span
             className={cn(
