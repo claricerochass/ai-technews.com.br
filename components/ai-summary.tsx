@@ -38,7 +38,7 @@ export function AISummaryCard({ summary, category }: AISummaryProps) {
         <div className="flex items-center gap-2">
           <Sparkles className="h-3.5 w-3.5 text-amber-500" />
           <span className="text-xs font-medium text-muted-foreground italic">
-            Escolha seu resumo inteligente de acordo com seu perfil
+            Selecione seu ponto de vista para obter um resumo inteligente
           </span>
         </div>
         {isExpanded ? (
