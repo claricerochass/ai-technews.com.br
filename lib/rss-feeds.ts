@@ -19,8 +19,8 @@ export const RSS_FEEDS: FeedSource[] = [
     category: "design",
   },
   {
-    name: "Sidebar.io",
-    url: "https://sidebar.io/feed.xml",
+    name: "CSS-Tricks",
+    url: "https://css-tricks.com/feed/",
     category: "design",
   },
   // AI
@@ -30,13 +30,13 @@ export const RSS_FEEDS: FeedSource[] = [
     category: "ai",
   },
   {
-    name: "VentureBeat AI",
-    url: "https://venturebeat.com/category/ai/feed/",
+    name: "Hugging Face Blog",
+    url: "https://huggingface.co/blog/feed.xml",
     category: "ai",
   },
   {
-    name: "Towards Data Science",
-    url: "https://towardsdatascience.com/feed",
+    name: "DeepMind Blog",
+    url: "https://deepmind.google/blog/rss.xml",
     category: "ai",
   },
   // Tech
@@ -51,8 +51,8 @@ export const RSS_FEEDS: FeedSource[] = [
     category: "tech",
   },
   {
-    name: "Ars Technica",
-    url: "https://feeds.arstechnica.com/arstechnica/index",
+    name: "Wired",
+    url: "https://www.wired.com/feed/rss",
     category: "tech",
   },
 ]

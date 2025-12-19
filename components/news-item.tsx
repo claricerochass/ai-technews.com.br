@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 
-import { ExternalLink, Sparkles, ChevronDown } from "lucide-react"
+import { ExternalLink, Sparkles, ChevronDown, Loader2 } from "lucide-react"
 import type { NewsItem as NewsItemType } from "@/lib/rss-feeds"
 import { cn } from "@/lib/utils"
 
@@ -623,15 +623,47 @@ const categoryColors: Record<string, string> = {
 export function NewsItem({ item }: NewsItemProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [selectedChip, setSelectedChip] = useState<string | null>(null)
+  const [insights, setInsights] = useState<Record<string, string>>({})
+  const [loadingChip, setLoadingChip] = useState<string | null>(null)
 
   const hasImage = Boolean(item.imageUrl)
   const PatternComponent = categoryPatterns[item.category] || TechPattern
   const seed = hashString(item.title)
 
-  const insights: Record<string, string> = {
-    design: `Do ponto de vista de Design, "${item.title}" representa uma oportunidade significativa para repensar interfaces e experiências do usuário. Esta tendência pode influenciar padrões de design system, paletas de cores e hierarquias visuais. Designers devem considerar como adaptar seus workflows e ferramentas para incorporar essas mudanças, mantendo foco em acessibilidade e usabilidade. A evolução do mercado exige atualização constante em prototipagem e design responsivo.`,
-    dev: `Para Desenvolvedores, esta notícia sobre "${item.title}" indica mudanças importantes na stack tecnológica. Recomenda-se avaliar impactos em arquitetura de sistemas, APIs e integrações existentes. Considere atualizar dependências, revisar padrões de código e explorar novas bibliotecas que possam otimizar performance. A adoção gradual com testes automatizados minimiza riscos de regressão. Mantenha documentação atualizada para facilitar onboarding da equipe.`,
-    business: `No contexto de Negócios, "${item.title}" apresenta implicações estratégicas relevantes. Empresas que se adaptarem rapidamente podem capturar market share significativo. Analise o ROI potencial, considere parcerias estratégicas e avalie o impacto no modelo de receita. A transformação digital acelerada exige agilidade na tomada de decisões. Monitore concorrentes e prepare planos de contingência para diferentes cenários de mercado.`,
+  async function fetchInsight(perspective: string) {
+    if (insights[perspective]) {
+      return
+    }
+
+    setLoadingChip(perspective)
+
+    try {
+      const response = await fetch("/api/generate-insight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: item.title,
+          description: item.description,
+          category: item.category,
+          perspective,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Falha ao gerar insight")
+      }
+
+      const data = await response.json()
+      setInsights((prev) => ({ ...prev, [perspective]: data.insight }))
+    } catch (error) {
+      console.error("[v0] Error fetching insight:", error)
+      setInsights((prev) => ({
+        ...prev,
+        [perspective]: "Não foi possível gerar o insight. Tente novamente.",
+      }))
+    } finally {
+      setLoadingChip(null)
+    }
   }
 
   function formatDate(dateString: string): string {
@@ -662,10 +694,16 @@ export function NewsItem({ item }: NewsItemProps) {
     }
   }
 
-  const handleChipClick = (e: React.MouseEvent, chip: string) => {
+  const handleChipClick = async (e: React.MouseEvent, chip: string) => {
     e.preventDefault()
     e.stopPropagation()
-    setSelectedChip(selectedChip === chip ? null : chip)
+
+    if (selectedChip === chip) {
+      setSelectedChip(null)
+    } else {
+      setSelectedChip(chip)
+      await fetchInsight(chip)
+    }
   }
 
   return (
@@ -729,42 +767,76 @@ export function NewsItem({ item }: NewsItemProps) {
             <div className="flex gap-2">
               <button
                 onClick={(e) => handleChipClick(e, "design")}
+                disabled={loadingChip !== null}
                 className={cn(
                   "rounded-full px-3 py-1 text-xs font-medium transition-all",
                   selectedChip === "design"
                     ? "bg-purple-500 text-white ring-2 ring-purple-300"
                     : "bg-purple-100 text-purple-700 hover:bg-purple-200",
+                  loadingChip !== null && "opacity-50 cursor-not-allowed",
                 )}
               >
-                Design
+                {loadingChip === "design" ? (
+                  <span className="flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Gerando...
+                  </span>
+                ) : (
+                  "Design"
+                )}
               </button>
               <button
                 onClick={(e) => handleChipClick(e, "dev")}
+                disabled={loadingChip !== null}
                 className={cn(
                   "rounded-full px-3 py-1 text-xs font-medium transition-all",
                   selectedChip === "dev"
                     ? "bg-green-500 text-white ring-2 ring-green-300"
                     : "bg-green-100 text-green-700 hover:bg-green-200",
+                  loadingChip !== null && "opacity-50 cursor-not-allowed",
                 )}
               >
-                Dev
+                {loadingChip === "dev" ? (
+                  <span className="flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Gerando...
+                  </span>
+                ) : (
+                  "Dev"
+                )}
               </button>
               <button
                 onClick={(e) => handleChipClick(e, "business")}
+                disabled={loadingChip !== null}
                 className={cn(
                   "rounded-full px-3 py-1 text-xs font-medium transition-all",
                   selectedChip === "business"
                     ? "bg-amber-500 text-white ring-2 ring-amber-300"
                     : "bg-amber-100 text-amber-700 hover:bg-amber-200",
+                  loadingChip !== null && "opacity-50 cursor-not-allowed",
                 )}
               >
-                Negócio
+                {loadingChip === "business" ? (
+                  <span className="flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Gerando...
+                  </span>
+                ) : (
+                  "Negócio"
+                )}
               </button>
             </div>
 
             {/* Texto do insight */}
             {selectedChip ? (
-              <p className="text-sm text-muted-foreground leading-relaxed">{insights[selectedChip]}</p>
+              loadingChip === selectedChip ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Gerando insight inteligente...</span>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground leading-relaxed">{insights[selectedChip]}</p>
+              )
             ) : (
               <p className="text-sm text-muted-foreground/70 italic">
                 Selecione um ponto de vista, para ver seu insight inteligente
