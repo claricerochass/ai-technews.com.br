@@ -757,7 +757,7 @@ export function NewsItem({ item }: NewsItemProps) {
           className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
         >
           <Sparkles className="h-4 w-4" />
-          <span>Ver insights</span>
+          <span>{isExpanded ? "Ocultar insights" : "Ver insights"}</span>
           <ChevronDown className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-180")} />
         </button>
 
