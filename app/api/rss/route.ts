@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import Parser from "rss-parser"
 import { RSS_FEEDS, type NewsItem } from "@/lib/rss-feeds"
+import { rssRatelimit } from "@/lib/redis"
+import { withRateLimit } from "@/lib/rate-limit-middleware"
 
 const parser = new Parser({
   customFields: {
@@ -119,38 +121,40 @@ function stripHtml(html: string): string {
     .slice(0, 200)
 }
 
-export async function GET() {
-  try {
-    const allItems: NewsItem[] = []
+export async function GET(req: Request) {
+  return withRateLimit(req as any, { ratelimit: rssRatelimit }, async () => {
+    try {
+      const allItems: NewsItem[] = []
 
-    const feedPromises = RSS_FEEDS.map(async (feed) => {
-      try {
-        const parsed = await parser.parseURL(feed.url)
-        return parsed.items.slice(0, 10).map((item, index) => ({
-          id: `${feed.name}-${index}-${item.guid || item.link}`,
-          title: item.title || "Sem título",
-          description: stripHtml(item.contentSnippet || item.content || item.description || ""),
-          link: item.link || "",
-          pubDate: item.pubDate || item.isoDate || new Date().toISOString(),
-          source: feed.name,
-          category: feed.category,
-          imageUrl: extractImage(item as Record<string, unknown>),
-        }))
-      } catch (error) {
-        console.error(`Error fetching ${feed.name}:`, error)
-        return []
-      }
-    })
+      const feedPromises = RSS_FEEDS.map(async (feed) => {
+        try {
+          const parsed = await parser.parseURL(feed.url)
+          return parsed.items.slice(0, 10).map((item, index) => ({
+            id: `${feed.name}-${index}-${item.guid || item.link}`,
+            title: item.title || "Sem título",
+            description: stripHtml(item.contentSnippet || item.content || item.description || ""),
+            link: item.link || "",
+            pubDate: item.pubDate || item.isoDate || new Date().toISOString(),
+            source: feed.name,
+            category: feed.category,
+            imageUrl: extractImage(item as Record<string, unknown>),
+          }))
+        } catch (error) {
+          console.error(`Error fetching ${feed.name}:`, error)
+          return []
+        }
+      })
 
-    const results = await Promise.all(feedPromises)
-    results.forEach((items) => allItems.push(...items))
+      const results = await Promise.all(feedPromises)
+      results.forEach((items) => allItems.push(...items))
 
-    // Sort by date, most recent first
-    allItems.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
+      // Sort by date, most recent first
+      allItems.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
 
-    return NextResponse.json(allItems)
-  } catch (error) {
-    console.error("RSS fetch error:", error)
-    return NextResponse.json({ error: "Failed to fetch RSS feeds" }, { status: 500 })
-  }
+      return NextResponse.json(allItems)
+    } catch (error) {
+      console.error("RSS fetch error:", error)
+      return NextResponse.json({ error: "Failed to fetch RSS feeds" }, { status: 500 })
+    }
+  })
 }

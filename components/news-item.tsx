@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
+import { toast } from "sonner"
 
 import { ExternalLink, Sparkles, ChevronDown, Loader2 } from "lucide-react"
 import type { NewsItem as NewsItemType } from "@/lib/rss-feeds"
@@ -649,14 +650,37 @@ export function NewsItem({ item }: NewsItemProps) {
         }),
       })
 
+      if (response.status === 429) {
+        const data = await response.json()
+        toast({
+          title: "Muitas requisições",
+          description: data.message || "Aguarde alguns segundos antes de gerar novos insights.",
+          variant: "destructive",
+        })
+        setInsights((prev) => ({
+          ...prev,
+          [perspective]: "Rate limit atingido. Aguarde alguns segundos e tente novamente.",
+        }))
+        return
+      }
+
       if (!response.ok) {
         throw new Error("Falha ao gerar insight")
       }
 
       const data = await response.json()
+
+      if (data.rateLimited) {
+        toast({
+          title: "Limite de requisições",
+          description: "Você atingiu o limite de insights por minuto. O sistema retornou uma análise alternativa.",
+          variant: "default",
+        })
+      }
+
       setInsights((prev) => ({ ...prev, [perspective]: data.insight }))
     } catch (error) {
-      console.error("[v0] Error fetching insight:", error)
+      console.error("Error fetching insight:", error)
       setInsights((prev) => ({
         ...prev,
         [perspective]: "Não foi possível gerar o insight. Tente novamente.",
@@ -839,7 +863,7 @@ export function NewsItem({ item }: NewsItemProps) {
               )
             ) : (
               <p className="text-sm text-muted-foreground/70 italic">
-                Selecione um ponto de vista, para ver seu insight inteligente
+                Como você quer ler este insight? Escolha seu perfil e receba uma versão sob medida.
               </p>
             )}
           </div>
